@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-//import 'package:my_bluetooth_app/screens/bluetooth_screen.dart';
-import 'screens/home_screen.dart';
+import 'package:my_bluetooth_app/screens/home_screen.dart';
+//import 'package:my_bluetooth_app/screens/bluetooth__screen.dart';
 
 void main() {
   runApp(const MyApp());
