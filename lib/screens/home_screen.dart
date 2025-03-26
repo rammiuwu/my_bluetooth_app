@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'bluetooth_screen.dart'; // Importa la pantalla de búsqueda
 
-class MainScreen extends StatelessWidget {
+class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

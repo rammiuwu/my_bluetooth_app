@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 //import 'package:my_bluetooth_app/screens/bluetooth_screen.dart';
-import 'screens/main_screen.dart';
+import 'screens/home_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      home: MainScreen(), // Ahora inicia en WelcomeScreen
+      home: HomeScreen(), // Ahora inicia en WelcomeScreen
     );
   }
 }

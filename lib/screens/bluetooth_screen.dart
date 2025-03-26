@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:my_bluetooth_app/screens/device_screen.dart';
-import 'package:my_bluetooth_app/screens/main_screen.dart'; // Importamos la pantalla principal
+import 'package:my_bluetooth_app/screens/home_screen.dart'; // Importamos la pantalla principal
 
 class BluetoothScreen extends StatefulWidget {
   @override
@@ -54,7 +54,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
           onPressed: () {
             Navigator.pushReplacement(
               context,
-              MaterialPageRoute(builder: (context) => MainScreen()),
+              MaterialPageRoute(builder: (context) => HomeScreen()),
             );
           },
         ),
