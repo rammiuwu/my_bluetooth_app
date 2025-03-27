@@ -30,12 +30,20 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_blue_plus: ^1.16.2  # Paquete para Bluetooth
-  permission_handler: ^11.0.1  # Manejo de permisos
+  flutter_blue_plus: ^1.35.3  # Paquete para Bluetooth
+  permission_handler: ^11.4.0  # Manejo de permisos
+  flutter_launcher_icons: ^0.14.3  # Iconos de la app
+  provider: ^6.1.4  # Manejo de estados
+  google_fonts: ^6.2.1  # Fuentes de Google
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/plantty.png"
 
 dev_dependencies:
   flutter_test:

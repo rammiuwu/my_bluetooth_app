@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:my_bluetooth_app/screens/bluetooth_screen.dart';
+import 'package:my_bluetooth_app/main.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -10,23 +13,17 @@ class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   List<String> selectedPlants = [];
 
-  static const List<Widget> _widgetOptions = <Widget>[
+  static List<Widget> get _widgetOptions => <Widget>[
     Center(
-      child: Text(
-        "Miau",
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-      ),
+      child: Text("Miau", style: GoogleFonts.robotoCondensed(fontSize: 20)),
     ),
     Center(
-      child: Text(
-        "Planta",
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-      ),
+      child: Text("Planta", style: GoogleFonts.robotoCondensed(fontSize: 20)),
     ),
     Center(
       child: Text(
         "Calendario",
-        style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        style: GoogleFonts.robotoCondensed(fontSize: 20),
       ),
     ),
   ];
@@ -49,8 +46,21 @@ class _HomeScreenState extends State<HomeScreen> {
     showDialog<void>(
       context: context,
       builder: (BuildContext context) {
+        final themeProvider = Provider.of<ThemeProvider>(
+          context,
+          listen: false,
+        );
         return AlertDialog(
-          title: const Text('Selecciona una planta'),
+          backgroundColor:
+              themeProvider.isDarkMode ? Colors.grey[800] : Colors.white,
+          title: Text(
+            'Selecciona una planta',
+            style: GoogleFonts.robotoCondensed(
+              color: themeProvider.isDarkMode ? Colors.white : Colors.black,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
           content: SizedBox(
             width: double.maxFinite,
             child: ListView.builder(
@@ -58,8 +68,23 @@ class _HomeScreenState extends State<HomeScreen> {
               itemCount: plantas.length,
               itemBuilder: (context, index) {
                 return ListTile(
-                  title: Text(plantas[index]),
-                  leading: Icon(Icons.local_florist, color: Colors.green),
+                  title: Text(
+                    plantas[index],
+                    style: GoogleFonts.robotoCondensed(
+                      color:
+                          themeProvider.isDarkMode
+                              ? Colors.white
+                              : Colors.black,
+                      fontSize: 16,
+                    ),
+                  ),
+                  leading: Icon(
+                    Icons.local_florist,
+                    color:
+                        themeProvider.isDarkMode
+                            ? Colors.teal[400]
+                            : Colors.blueGrey[800],
+                  ),
                   onTap: () {
                     if (selectedPlants.length < 5) {
                       setState(() {
@@ -68,7 +93,10 @@ class _HomeScreenState extends State<HomeScreen> {
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text("Solo puedes agregar hasta 5 plantas"),
+                          content: Text(
+                            "Solo puedes agregar hasta 5 plantas",
+                            style: GoogleFonts.robotoCondensed(),
+                          ),
                           duration: Duration(seconds: 2),
                         ),
                       );
@@ -81,7 +109,16 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           actions: <Widget>[
             TextButton(
-              child: const Text('Cancelar'),
+              child: Text(
+                'Cancelar',
+                style: GoogleFonts.robotoCondensed(
+                  color:
+                      themeProvider.isDarkMode
+                          ? Colors.teal[400]
+                          : Colors.blueGrey[800],
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               onPressed: () {
                 Navigator.of(context).pop();
               },
@@ -94,22 +131,41 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final themeProvider = Provider.of<ThemeProvider>(context);
+    final isDarkMode = themeProvider.isDarkMode;
+    final primaryColor = isDarkMode ? Colors.teal[400] : Colors.blueGrey[800];
+
     return Scaffold(
       appBar: AppBar(
-        title: Text("PLANTTY"),
+        title: Text(
+          "PLANTTY",
+          style: GoogleFonts.robotoCondensed(
+            fontWeight: FontWeight.bold,
+            color: primaryColor,
+            fontSize: 22,
+          ),
+        ),
         automaticallyImplyLeading: false,
+        backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
+        elevation: 0,
         actions: [
-          Padding(
-            padding: const EdgeInsets.only(right: 15),
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => BluetoothScreen()),
-                );
-              },
-              child: Text("Bluetooth"),
-            ),
+          IconButton(
+            icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
+            color: primaryColor,
+            onPressed: () {
+              themeProvider.toggleTheme();
+            },
+          ),
+          IconButton(
+            icon: Icon(Icons.bluetooth),
+            color: primaryColor,
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => BluetoothScreen()),
+              );
+            },
+            tooltip: 'Conexión Bluetooth',
           ),
         ],
       ),
@@ -130,10 +186,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemCount: selectedPlants.length,
                       itemBuilder: (context, index) {
                         return Card(
+                          color: isDarkMode ? Colors.grey[800] : Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10),
+                            side: BorderSide(
+                              color:
+                                  isDarkMode
+                                      ? Colors.grey[700]!
+                                      : Colors.grey[200]!,
+                              width: 1,
+                            ),
                           ),
-                          elevation: 4,
+                          elevation: 0,
                           child: Padding(
                             padding: EdgeInsets.all(8),
                             child: Column(
@@ -144,9 +208,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                     child: Text(
                                       selectedPlants[index],
                                       textAlign: TextAlign.center,
-                                      style: TextStyle(
+                                      style: GoogleFonts.robotoCondensed(
                                         fontSize: 16,
                                         fontWeight: FontWeight.bold,
+                                        color:
+                                            isDarkMode
+                                                ? Colors.white
+                                                : Colors.black,
                                       ),
                                     ),
                                   ),
@@ -178,7 +246,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     style: ElevatedButton.styleFrom(
                       shape: CircleBorder(),
                       padding: EdgeInsets.all(15),
-                      backgroundColor: Color.fromARGB(121, 57, 214, 70),
+                      backgroundColor: primaryColor,
                     ),
                     child: Icon(Icons.add, color: Colors.white, size: 30),
                   ),
@@ -187,19 +255,34 @@ class _HomeScreenState extends State<HomeScreen> {
               )
               : _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Gato'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.local_florist),
-            label: 'Planta',
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.calendar_today),
-            label: 'Calendario',
-          ),
-        ],
+        items:
+            [
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.pets),
+                    label: 'Gato',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.local_florist),
+                    label: 'Planta',
+                  ),
+                  BottomNavigationBarItem(
+                    icon: Icon(Icons.calendar_today),
+                    label: 'Calendario',
+                  ),
+                ]
+                .map(
+                  (item) => BottomNavigationBarItem(
+                    icon: item.icon,
+                    label: item.label,
+                  ),
+                )
+                .toList(),
         currentIndex: _selectedIndex,
-        selectedItemColor: const Color.fromARGB(147, 63, 180, 63),
+        selectedItemColor: primaryColor,
+        unselectedItemColor: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+        backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
+        selectedLabelStyle: GoogleFonts.robotoCondensed(),
+        unselectedLabelStyle: GoogleFonts.robotoCondensed(),
         onTap: _onItemTapped,
       ),
     );
