@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "398821978800",
+    "project_id": "plantty-42bda",
+    "storage_bucket": "plantty-42bda.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:398821978800:android:8e126f5d3793b68a8c4175",
+        "android_client_info": {
+          "package_name": "com.example.my_bluetooth_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBx4iuI8wTi55IyOmxjprmjAt1uuZEwsK4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

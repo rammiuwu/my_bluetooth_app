@@ -4,8 +4,9 @@ import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:my_bluetooth_app/screens/home_screen.dart';
+//import 'package:my_bluetooth_app/screens/home_screen.dart';
 import 'package:my_bluetooth_app/main.dart';
+import 'package:my_bluetooth_app/screens/bluetooth_provider.dart';
 
 class BluetoothScreen extends StatefulWidget {
   @override
@@ -16,8 +17,6 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   List<BluetoothDevice> _devicesList = [];
   bool _isScanning = false;
   bool _hasPermissions = false;
-  bool _isConnected = false;
-  BluetoothDevice? _connectedDevice;
   String? _statusMessage;
 
   @override
@@ -115,12 +114,13 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
       _statusMessage = "Conectando...";
     });
 
+    final bluetoothProvider = Provider.of<BluetoothProvider>(
+      context,
+      listen: false,
+    );
+
     try {
-      await device.connect(autoConnect: false);
-      setState(() {
-        _connectedDevice = device;
-        _isConnected = true;
-      });
+      await bluetoothProvider.connectToDevice(device);
       _showStatusMessage("¡Conectado a ${device.platformName}!");
     } catch (e) {
       _showStatusMessage("Error al conectar: ${e.toString()}");
@@ -132,14 +132,12 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
   }
 
   void _disconnectDevice() async {
-    if (_connectedDevice != null) {
-      await _connectedDevice!.disconnect();
-      setState(() {
-        _connectedDevice = null;
-        _isConnected = false;
-      });
-      _showStatusMessage("Dispositivo desconectado");
-    }
+    final bluetoothProvider = Provider.of<BluetoothProvider>(
+      context,
+      listen: false,
+    );
+    await bluetoothProvider.disconnectDevice();
+    _showStatusMessage("Dispositivo desconectado");
   }
 
   void _showStatusMessage(String message) {
@@ -159,6 +157,10 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     final cardColor = isDarkMode ? Colors.grey[800] : Colors.white;
     final textColor = isDarkMode ? Colors.white : Colors.black;
 
+    final bluetoothProvider = Provider.of<BluetoothProvider>(context);
+    final connectedDevice = bluetoothProvider.connectedDevice;
+    final isConnected = bluetoothProvider.isConnected;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -171,17 +173,12 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
         ),
         leading: IconButton(
           icon: Icon(Icons.arrow_back, color: primaryColor),
-          onPressed: () {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => HomeScreen()),
-            );
-          },
+          onPressed: () => Navigator.pop(context),
         ),
         backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
         elevation: 1,
         actions: [
-          if (_isConnected)
+          if (isConnected)
             IconButton(
               icon: Icon(Icons.link_off, color: Colors.red),
               onPressed: _disconnectDevice,
@@ -194,35 +191,14 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
         child: Column(
           children: [
             if (_statusMessage != null)
-              Container(
-                padding: EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: isDarkMode ? Colors.grey[800] : Colors.blue[50],
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.info,
-                      size: 20,
-                      color: _isConnected ? Colors.green : primaryColor,
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        _statusMessage!,
-                        style: GoogleFonts.robotoCondensed(
-                          color: textColor,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+              _buildStatusMessage(primaryColor, textColor, isConnected),
             SizedBox(height: 20),
-            if (_isConnected)
-              _buildConnectedDeviceInfo(primaryColor, textColor)
+            if (isConnected)
+              _buildConnectedDeviceInfo(
+                connectedDevice,
+                primaryColor,
+                textColor,
+              )
             else if (!_hasPermissions)
               _buildPermissionWarning(context, primaryColor, textColor)
             else if (_isScanning && _devicesList.isEmpty)
@@ -282,7 +258,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
                 ),
               ),
             SizedBox(height: 20),
-            if (!_isConnected)
+            if (!isConnected)
               ElevatedButton(
                 onPressed: _isScanning ? null : _startScan,
                 child: Text(
@@ -306,7 +282,44 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
     );
   }
 
-  Widget _buildConnectedDeviceInfo(Color? primaryColor, Color textColor) {
+  Widget _buildStatusMessage(
+    Color? primaryColor,
+    Color textColor,
+    bool isConnected,
+  ) {
+    return Container(
+      padding: EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.blue[50],
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.info,
+            size: 20,
+            color: isConnected ? Colors.green : primaryColor,
+          ),
+          SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              _statusMessage!,
+              style: GoogleFonts.robotoCondensed(
+                color: textColor,
+                fontSize: 14,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildConnectedDeviceInfo(
+    BluetoothDevice? device,
+    Color? primaryColor,
+    Color textColor,
+  ) {
     return Expanded(
       child: Center(
         child: Column(
@@ -324,7 +337,7 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
             ),
             SizedBox(height: 10),
             Text(
-              _connectedDevice?.platformName ?? "Desconocido",
+              device?.platformName ?? "Desconocido",
               style: GoogleFonts.robotoCondensed(
                 fontSize: 22,
                 color: primaryColor,
@@ -332,16 +345,10 @@ class _BluetoothScreenState extends State<BluetoothScreen> {
             ),
             SizedBox(height: 10),
             Text(
-              _connectedDevice?.remoteId.toString() ?? "",
+              device?.remoteId.toString() ?? "",
               style: GoogleFonts.robotoCondensed(
                 fontSize: 14,
-                color:
-                    Provider.of<ThemeProvider>(
-                          context,
-                          listen: false,
-                        ).isDarkMode
-                        ? Colors.grey[400]
-                        : Colors.grey[600],
+                color: textColor.withOpacity(0.6),
               ),
             ),
             SizedBox(height: 30),

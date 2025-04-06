@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:my_bluetooth_app/screens/bluetooth_screen.dart';
+import 'package:my_bluetooth_app/screens/device_screen.dart';
 import 'package:my_bluetooth_app/main.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -86,22 +87,26 @@ class _HomeScreenState extends State<HomeScreen> {
                             : Colors.blueGrey[800],
                   ),
                   onTap: () {
-                    if (selectedPlants.length < 5) {
-                      setState(() {
-                        selectedPlants.add(plantas[index]);
-                      });
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(
-                            "Solo puedes agregar hasta 5 plantas",
-                            style: GoogleFonts.robotoCondensed(),
+                    if (!selectedPlants.contains(plantas[index])) {
+                      if (selectedPlants.length < 5) {
+                        setState(() {
+                          selectedPlants.add(plantas[index]);
+                        });
+                        Navigator.of(context).pop();
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(
+                              "Solo puedes agregar hasta 5 plantas",
+                              style: GoogleFonts.robotoCondensed(),
+                            ),
+                            duration: Duration(seconds: 2),
                           ),
-                          duration: Duration(seconds: 2),
-                        ),
-                      );
+                        );
+                      }
+                    } else {
+                      Navigator.of(context).pop();
                     }
-                    Navigator.of(context).pop();
                   },
                 );
               },
@@ -185,55 +190,63 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       itemCount: selectedPlants.length,
                       itemBuilder: (context, index) {
-                        return Card(
-                          color: isDarkMode ? Colors.grey[800] : Colors.white,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                            side: BorderSide(
-                              color:
-                                  isDarkMode
-                                      ? Colors.grey[700]!
-                                      : Colors.grey[200]!,
-                              width: 1,
+                        return InkWell(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(builder: (_) => DeviceScreen()),
+                            );
+                          },
+                          child: Card(
+                            color: isDarkMode ? Colors.grey[800] : Colors.white,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                              side: BorderSide(
+                                color:
+                                    isDarkMode
+                                        ? Colors.grey[700]!
+                                        : Colors.grey[200]!,
+                                width: 1,
+                              ),
                             ),
-                          ),
-                          elevation: 0,
-                          child: Padding(
-                            padding: EdgeInsets.all(8),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: [
-                                Expanded(
-                                  child: Center(
-                                    child: Text(
-                                      selectedPlants[index],
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.robotoCondensed(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.bold,
-                                        color:
-                                            isDarkMode
-                                                ? Colors.white
-                                                : Colors.black,
+                            elevation: 0,
+                            child: Padding(
+                              padding: EdgeInsets.all(8),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.center,
+                                children: [
+                                  Expanded(
+                                    child: Center(
+                                      child: Text(
+                                        selectedPlants[index],
+                                        textAlign: TextAlign.center,
+                                        style: GoogleFonts.robotoCondensed(
+                                          fontSize: 16,
+                                          fontWeight: FontWeight.bold,
+                                          color:
+                                              isDarkMode
+                                                  ? Colors.white
+                                                  : Colors.black,
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                                Align(
-                                  alignment: Alignment.bottomRight,
-                                  child: IconButton(
-                                    icon: Icon(
-                                      Icons.remove,
-                                      color: Colors.redAccent,
+                                  Align(
+                                    alignment: Alignment.bottomRight,
+                                    child: IconButton(
+                                      icon: Icon(
+                                        Icons.remove,
+                                        color: Colors.redAccent,
+                                      ),
+                                      onPressed: () {
+                                        setState(() {
+                                          selectedPlants.removeAt(index);
+                                        });
+                                      },
                                     ),
-                                    onPressed: () {
-                                      setState(() {
-                                        selectedPlants.removeAt(index);
-                                      });
-                                    },
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ),
                         );
@@ -255,28 +268,17 @@ class _HomeScreenState extends State<HomeScreen> {
               )
               : _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
-        items:
-            [
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.pets),
-                    label: 'Gato',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.local_florist),
-                    label: 'Planta',
-                  ),
-                  BottomNavigationBarItem(
-                    icon: Icon(Icons.calendar_today),
-                    label: 'Calendario',
-                  ),
-                ]
-                .map(
-                  (item) => BottomNavigationBarItem(
-                    icon: item.icon,
-                    label: item.label,
-                  ),
-                )
-                .toList(),
+        items: [
+          BottomNavigationBarItem(icon: Icon(Icons.pets), label: 'Gato'),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.local_florist),
+            label: 'Planta',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.calendar_today),
+            label: 'Calendario',
+          ),
+        ],
         currentIndex: _selectedIndex,
         selectedItemColor: primaryColor,
         unselectedItemColor: isDarkMode ? Colors.grey[400] : Colors.grey[600],

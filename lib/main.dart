@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:my_bluetooth_app/screens/home_screen.dart';
+import 'package:my_bluetooth_app/screens/bluetooth_provider.dart';
 
 void main() {
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => ThemeProvider(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => ThemeProvider()),
+        ChangeNotifierProvider(create: (_) => BluetoothProvider()), // ✅ Aquí
+      ],
       child: const MyApp(),
     ),
   );
