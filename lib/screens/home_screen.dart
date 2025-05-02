@@ -4,6 +4,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:my_bluetooth_app/screens/bluetooth_screen.dart';
 import 'package:my_bluetooth_app/screens/device_screen.dart';
 import 'package:my_bluetooth_app/main.dart';
+import 'package:my_bluetooth_app/screens/bluetooth_provider.dart'; // << Asegúrate de tener este import
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -124,9 +125,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
+              onPressed: () => Navigator.of(context).pop(),
             ),
           ],
         );
@@ -157,9 +156,7 @@ class _HomeScreenState extends State<HomeScreen> {
           IconButton(
             icon: Icon(isDarkMode ? Icons.light_mode : Icons.dark_mode),
             color: primaryColor,
-            onPressed: () {
-              themeProvider.toggleTheme();
-            },
+            onPressed: () => themeProvider.toggleTheme(),
           ),
           IconButton(
             icon: Icon(Icons.bluetooth),
@@ -192,10 +189,36 @@ class _HomeScreenState extends State<HomeScreen> {
                       itemBuilder: (context, index) {
                         return InkWell(
                           onTap: () {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(builder: (_) => DeviceScreen()),
-                            );
+                            final bluetoothProvider =
+                                Provider.of<BluetoothProvider>(
+                                  context,
+                                  listen: false,
+                                );
+                            final bluetoothDevice =
+                                bluetoothProvider.connectedDevice;
+
+                            if (bluetoothDevice != null) {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder:
+                                      (_) => DeviceScreen(
+                                        plantName: selectedPlants[index],
+                                        device: bluetoothDevice,
+                                      ),
+                                ),
+                              );
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    "Primero debes conectar un dispositivo Bluetooth.",
+                                    style: GoogleFonts.robotoCondensed(),
+                                  ),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
                           },
                           child: Card(
                             color: isDarkMode ? Colors.grey[800] : Colors.white,

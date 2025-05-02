@@ -52,22 +52,39 @@ class BluetoothProvider with ChangeNotifier {
     _readCharacteristic!.value.listen((value) {
       if (value.isNotEmpty) {
         String data = String.fromCharCodes(value);
-        print("📡 String recibido: $data"); // 👈 LOG IMPORTANTE
+        print("📡 String recibido: $data");
 
         List<String> parts = data.split(',');
 
         if (parts.length >= 2) {
           _humidity = parts[0];
           _light = parts[1];
-          print("✅ Humedad: $_humidity, Luz: $_light"); // 👈 LOG EXTRA
+          print("✅ Humedad: $_humidity, Luz: $_light");
+
+          // Aquí puedes notificar al PlantProvider si es necesario
           notifyListeners();
         } else {
-          print("⚠️ Datos mal formateados: $data"); // 👈 Si no viene con coma
+          print("⚠️ Datos mal formateados: $data");
         }
       } else {
         print("❌ Valor recibido vacío");
       }
     });
+  }
+
+  // Nueva función para obtener los datos de los sensores
+  Future<void> fetchSensorData() async {
+    if (_readCharacteristic == null) {
+      print("❌ Característica no disponible para leer los datos.");
+      return;
+    }
+
+    // Llama a la función que empieza a escuchar las características
+    await _startListening(); // Esto asegura que los datos sean escuchados y procesados
+
+    // En este punto, los valores de _humidity y _light ya están siendo actualizados
+    // por los datos recibidos del dispositivo.
+    notifyListeners(); // Asegura que la UI se actualice con los nuevos datos
   }
 
   Future<void> disconnectDevice() async {
