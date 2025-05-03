@@ -197,31 +197,23 @@ class _HomeScreenState extends State<HomeScreen> {
                             final bluetoothDevice =
                                 bluetoothProvider.connectedDevice;
 
-                            if (bluetoothDevice != null) {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder:
-                                      (_) => DeviceScreen(
-                                        plantName: selectedPlants[index],
-                                        device: bluetoothDevice,
-                                      ),
-                                ),
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    "Primero debes conectar un dispositivo Bluetooth.",
-                                    style: GoogleFonts.robotoCondensed(),
-                                  ),
-                                  duration: Duration(seconds: 2),
-                                ),
-                              );
-                            }
+                            // Ir a DeviceScreen incluso si no hay dispositivo Bluetooth
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder:
+                                    (_) => DeviceScreen(
+                                      plantName: selectedPlants[index],
+                                      device: bluetoothDevice,
+                                    ),
+                              ),
+                            );
                           },
                           child: Card(
-                            color: isDarkMode ? Colors.grey[800] : Colors.white,
+                            color:
+                                isDarkMode
+                                    ? Colors.grey[800]
+                                    : const Color.fromARGB(255, 253, 255, 153),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                               side: BorderSide(
@@ -248,7 +240,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                           fontWeight: FontWeight.bold,
                                           color:
                                               isDarkMode
-                                                  ? Colors.white
+                                                  ? const Color.fromARGB(
+                                                    255,
+                                                    255,
+                                                    255,
+                                                    255,
+                                                  )
                                                   : Colors.black,
                                         ),
                                       ),
@@ -284,7 +281,11 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: EdgeInsets.all(15),
                       backgroundColor: primaryColor,
                     ),
-                    child: Icon(Icons.add, color: Colors.white, size: 30),
+                    child: Icon(
+                      Icons.add,
+                      color: const Color.fromARGB(255, 255, 255, 255),
+                      size: 30,
+                    ),
                   ),
                   SizedBox(height: 20),
                 ],

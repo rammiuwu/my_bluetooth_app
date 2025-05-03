@@ -1,3 +1,4 @@
+import 'dart:async'; // Importa para usar StreamController
 import 'package:flutter/material.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
 
@@ -8,10 +9,18 @@ class BluetoothProvider with ChangeNotifier {
   String _humidity = "N/A";
   String _light = "N/A";
 
+  // StreamController para emitir los datos de sensores
+  final StreamController<Map<String, String>> _sensorDataController =
+      StreamController<Map<String, String>>.broadcast();
+
   BluetoothDevice? get connectedDevice => _connectedDevice;
   bool get isConnected => _isConnected;
   String get humidity => _humidity;
   String get light => _light;
+
+  // Stream para que los otros widgets puedan escuchar los cambios
+  Stream<Map<String, String>> get sensorDataStream =>
+      _sensorDataController.stream;
 
   Future<void> connectToDevice(BluetoothDevice device) async {
     try {
@@ -61,7 +70,9 @@ class BluetoothProvider with ChangeNotifier {
           _light = parts[1];
           print("✅ Humedad: $_humidity, Luz: $_light");
 
-          // Aquí puedes notificar al PlantProvider si es necesario
+          // Emite los nuevos datos a través del Stream
+          _sensorDataController.add({'humidity': _humidity, 'light': _light});
+
           notifyListeners();
         } else {
           print("⚠️ Datos mal formateados: $data");
@@ -96,5 +107,11 @@ class BluetoothProvider with ChangeNotifier {
       _light = "N/A";
       notifyListeners();
     }
+  }
+
+  // No olvides cerrar el StreamController cuando ya no sea necesario
+  void dispose() {
+    _sensorDataController.close();
+    super.dispose();
   }
 }

@@ -32,7 +32,7 @@ class PlantProvider with ChangeNotifier {
 
         final estandar = data?['Estandar'];
         if (estandar != null) {
-          debugPrint("📦 Estandar extraído: $estandar");
+          debugPrint("📦 Estándar extraído: $estandar");
 
           final luz = estandar['Luz'];
           final humedad = estandar['Humedad'];
