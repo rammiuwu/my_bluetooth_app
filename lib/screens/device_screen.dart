@@ -219,10 +219,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
     return Consumer2<BluetoothProvider, PlantProvider>(
       builder: (context, bluetoothProvider, plantProvider, child) {
         final isConnected = bluetoothProvider.isConnected;
-        final mensajeHumedad = plantProvider.getMensajeHumedad(
-          bluetoothProvider.humidity,
-        );
-        final mensajeLuz = plantProvider.getMensajeLuz(bluetoothProvider.light);
 
         return Scaffold(
           appBar: AppBar(

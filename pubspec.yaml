@@ -12,13 +12,17 @@ dependencies:
   flutter:
     sdk: flutter
   flutter_blue_plus: ^1.35.3  # Paquete para Bluetooth
-  permission_handler: ^11.4.0  # Manejo de permisos
+  permission_handler: ^12.0.0+1  # Manejo de permisos
   flutter_launcher_icons: ^0.14.3  # Iconos de la app
   provider: ^6.1.4  # Manejo de estados
   google_fonts: ^6.2.1  # Fuentes de Google
   firebase_core: ^3.2.0  # Actualiza a la versión más reciente
   cloud_firestore: ^5.6.7  # Versión más reciente
+  firebase_auth: ^5.0.0  # Firebase Authentication para gestionar usuarios
+  uuid: ^4.5.1  # Asegúrate de usar la última versión
   cupertino_icons: ^1.0.8
+  shared_preferences: ^2.5.3
+  intl: ^0.18.0 # Agrega esta línea
 
 flutter_icons:
   android: true

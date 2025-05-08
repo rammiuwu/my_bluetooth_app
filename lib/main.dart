@@ -4,32 +4,66 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:my_bluetooth_app/screens/home_screen.dart';
 import 'package:my_bluetooth_app/screens/bluetooth_provider.dart';
 import 'package:my_bluetooth_app/screens/plant_provider.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 import 'firebase_options.dart'; // Importa el archivo generado por FlutterFire CLI
 
 void main() async {
-  WidgetsFlutterBinding.ensureInitialized(); // Asegúrate de que Flutter esté completamente inicializado
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Inicialización de Firebase
   try {
     await Firebase.initializeApp(
-      options:
-          DefaultFirebaseOptions
-              .currentPlatform, // Inicializa Firebase con las opciones correspondientes
+      options: DefaultFirebaseOptions.currentPlatform,
     );
-    print("Inicializado Firebase");
+    print("✅ Firebase inicializado correctamente");
   } catch (e) {
-    print("Error inicializando Firebase: $e");
-    // Aquí podrías mostrar una pantalla de error si es necesario
+    print("❌ Error inicializando Firebase: $e");
+    runApp(const ErrorScreen());
+    return;
   }
 
+  // Obtener o crear userId en SharedPreferences
+  final prefs = await SharedPreferences.getInstance();
+  String? userId = prefs.getString('userId');
+  if (userId == null) {
+    userId = const Uuid().v4();
+    await prefs.setString('userId', userId);
+  }
+  print("👤 Usuario ID asignado: $userId");
+
+  // Iniciar la app con los providers
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
-        ChangeNotifierProvider(create: (_) => BluetoothProvider()),
+        ChangeNotifierProvider(
+          create: (_) => BluetoothProvider(userId: userId),
+        ), // ← AQUÍ SE PASA userId
         ChangeNotifierProvider(create: (_) => PlantProvider()),
       ],
       child: const MyApp(),
     ),
   );
+}
+
+class ErrorScreen extends StatelessWidget {
+  const ErrorScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: Text(
+            'Error al inicializar la aplicación. Intenta nuevamente.',
+            style: TextStyle(fontSize: 20, color: Colors.red),
+            textAlign: TextAlign.center,
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 class ThemeProvider with ChangeNotifier {
