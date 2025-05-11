@@ -23,6 +23,8 @@ dependencies:
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.5.3
   intl: ^0.18.0 # Agrega esta línea
+  table_calendar: ^3.0.0
+
 
 flutter_icons:
   android: true

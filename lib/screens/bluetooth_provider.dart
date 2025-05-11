@@ -10,32 +10,38 @@ class BluetoothProvider with ChangeNotifier {
   bool _isConnected = false;
   String _humidity = "N/A";
   String _light = "N/A";
+  String? _plantName;
+  String? _userId;
 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   final StreamController<Map<String, String>> _sensorDataController =
       StreamController<Map<String, String>>.broadcast();
 
+  // ✅ Getters
   BluetoothDevice? get connectedDevice => _connectedDevice;
   bool get isConnected => _isConnected;
   String get humidity => _humidity;
   String get light => _light;
-
+  String? get plantName => _plantName;
+  String? get userId => _userId;
   Stream<Map<String, String>> get sensorDataStream =>
       _sensorDataController.stream;
 
-  String? _userId;
-
-  // Constructor que recibe el userId
-  BluetoothProvider({String? userId}) {
-    if (userId != null) {
-      setUserId(userId);
-    }
+  // ✅ Constructor
+  BluetoothProvider({String? userId, String? plantName}) {
+    if (userId != null) setUserId(userId);
+    if (plantName != null) setPlantName(plantName);
   }
 
   void setUserId(String userId) {
     _userId = userId;
     print("🆔 userId establecido: $_userId");
+  }
+
+  void setPlantName(String plantName) {
+    _plantName = plantName;
+    print("🌱 Nombre de la planta establecido: $_plantName");
   }
 
   Future<void> connectToDevice(BluetoothDevice device) async {
@@ -100,7 +106,6 @@ class BluetoothProvider with ChangeNotifier {
           print("✅ Humedad: $_humidity, Luz: $_light");
 
           _sensorDataController.add({'humidity': _humidity, 'light': _light});
-
           notifyListeners();
 
           if (_userId != null) {
@@ -128,15 +133,17 @@ class BluetoothProvider with ChangeNotifier {
       String formattedDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
       print(
-        "🚀 Guardando en Firebase: humidity=$_humidity, light=$_light, date=$formattedDate",
+        "🚀 Guardando en Firebase: humidity=$_humidity, light=$_light, date=$formattedDate, plantName=$_plantName",
       );
 
       await _firestore
-          .collection('plants')
+          .collection('user')
           .doc(_userId)
-          .collection('plantData')
+          .collection('date')
           .doc(formattedDate)
-          .set({'humidity': _humidity, 'light': _light, 'date': formattedDate});
+          .collection('plant')
+          .doc(_plantName)
+          .set({'humidity': _humidity, 'light': _light});
 
       print("✅ Datos de sensores guardados exitosamente en Firebase.");
     } catch (e) {

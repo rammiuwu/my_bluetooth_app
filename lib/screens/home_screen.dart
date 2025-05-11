@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:my_bluetooth_app/screens/bluetooth_screen.dart';
+import 'package:my_bluetooth_app/screens/calendar_screen.dart';
 import 'package:my_bluetooth_app/screens/device_screen.dart';
 import 'package:my_bluetooth_app/main.dart';
-import 'package:my_bluetooth_app/screens/bluetooth_provider.dart'; // << Asegúrate de tener este import
+import 'package:my_bluetooth_app/screens/bluetooth_provider.dart'; // Asegúrate de tener este import
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -19,15 +20,8 @@ class _HomeScreenState extends State<HomeScreen> {
     Center(
       child: Text("Miau", style: GoogleFonts.robotoCondensed(fontSize: 20)),
     ),
-    Center(
-      child: Text("Planta", style: GoogleFonts.robotoCondensed(fontSize: 20)),
-    ),
-    Center(
-      child: Text(
-        "Calendario",
-        style: GoogleFonts.robotoCondensed(fontSize: 20),
-      ),
-    ),
+    Container(), // Este se reemplaza dinámicamente en `body`
+    CalendarScreen(), // Aquí va la vista de calendario real
   ];
 
   void _onItemTapped(int index) {
@@ -197,7 +191,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             final bluetoothDevice =
                                 bluetoothProvider.connectedDevice;
 
-                            // Ir a DeviceScreen incluso si no hay dispositivo Bluetooth
+                            // Actualizar el BluetoothProvider antes de la navegación
+                            bluetoothProvider.setPlantName(
+                              selectedPlants[index],
+                            );
+
+                            // Ir a DeviceScreen
                             Navigator.push(
                               context,
                               MaterialPageRoute(
