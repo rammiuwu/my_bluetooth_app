@@ -69,37 +69,57 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
     // Recuperar los valores actualizados de los sensores
     final sensorValue =
-        sensorName == 'Luz'
-            ? bluetoothProvider.light.toString()
-            : bluetoothProvider.humidity.toString();
+        {
+          'Luz': bluetoothProvider.light.toString(),
+          'Humedad': bluetoothProvider.humidity.toString(),
+          'Ph': bluetoothProvider.ph.toString(),
+          'Temperatura': bluetoothProvider.temperature.toString(),
+        }[sensorName] ??
+        '0';
 
-    // Obtener el mensaje de consejos según el tipo de sensor utilizando los valores actuales
     String _sensorRecommendationMessage = '';
-
     if (sensorName == 'Luz') {
-      _sensorRecommendationMessage = plantProvider.getMensajeLuz(
-        sensorValue,
-      ); // Consejos de luz
+      _sensorRecommendationMessage = plantProvider.getMensajeLuz(sensorValue);
     } else if (sensorName == 'Humedad') {
       _sensorRecommendationMessage = plantProvider.getMensajeHumedad(
         sensorValue,
-      ); // Consejos de humedad
+      );
+    } else if (sensorName == 'Ph') {
+      _sensorRecommendationMessage = plantProvider.getMensajePh(sensorValue);
+    } else if (sensorName == 'Temperatura') {
+      _sensorRecommendationMessage = plantProvider.getMensajeTemperatura(
+        sensorValue,
+      );
     }
 
-    // Mostrar el pop-up con los valores y consejos actuales
+    String _getUnidad(String sensorName) {
+      switch (sensorName) {
+        case 'Luz':
+          return 'lx';
+        case 'Humedad':
+          return '%';
+        case 'Temperatura':
+          return '°C';
+        case 'Ph':
+          return ''; // Sin unidad
+        default:
+          return '';
+      }
+    }
+
     showDialog<String>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          backgroundColor: dialogColor, // Color dinámico para el fondo
+          backgroundColor: dialogColor,
           title: Text(
             '$sensorName',
-            style: const TextStyle(color: Colors.white), // Título en blanco
+            style: const TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
           ),
           contentPadding: const EdgeInsets.symmetric(
             horizontal: 20,
             vertical: 10,
-          ), // Ajuste de padding
+          ),
           content: StatefulBuilder(
             builder: (BuildContext context, setState) {
               return Consumer<BluetoothProvider>(
@@ -107,19 +127,22 @@ class _DeviceScreenState extends State<DeviceScreen> {
                   return StreamBuilder<Map<String, String>>(
                     stream: bluetoothProvider.sensorDataStream,
                     builder: (context, snapshot) {
-                      // Muestra el valor actual y los consejos en cuanto se abre el pop-up
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              '$sensorValue\n${sensorName == 'Luz' ? 'lx' : '%'}',
-                              style: const TextStyle(color: Colors.white),
+                              '$sensorValue\n${_getUnidad(sensorName)}',
+                              style: const TextStyle(
+                                color: Color.fromARGB(255, 0, 0, 0),
+                              ),
                             ),
                             const SizedBox(height: 10),
                             Text(
-                              _sensorRecommendationMessage, // Consejos iniciales
-                              style: const TextStyle(color: Colors.white),
+                              _sensorRecommendationMessage,
+                              style: const TextStyle(
+                                color: Color.fromARGB(255, 0, 0, 0),
+                              ),
                             ),
                           ],
                         );
@@ -128,32 +151,56 @@ class _DeviceScreenState extends State<DeviceScreen> {
                       if (snapshot.hasError) {
                         return const Text(
                           'Error al obtener los datos',
-                          style: TextStyle(color: Colors.white),
+                          style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
                         );
                       }
 
                       if (snapshot.hasData) {
                         final data = snapshot.data!;
-                        final updatedValueString =
-                            sensorName == 'Luz'
-                                ? data['light']
-                                : data['humidity'];
+                        String? updatedValueString;
 
-                        // Asegurarse de convertir el valor de los sensores correctamente
+                        // Asignar el valor correcto según el sensor
+                        switch (sensorName) {
+                          case 'Luz':
+                            updatedValueString = data['light'];
+                            break;
+                          case 'Humedad':
+                            updatedValueString = data['humidity'];
+                            break;
+                          case 'Temperatura':
+                            updatedValueString = data['temperature'];
+                            break;
+                          case 'Ph':
+                            updatedValueString = data['ph'];
+                            break;
+                        }
+
                         final updatedValue = double.tryParse(
                           updatedValueString ?? '',
                         );
 
-                        // Verifica si la conversión fue exitosa
                         if (updatedValue != null) {
                           String updatedRecommendation = '';
-                          if (sensorName == 'Luz') {
-                            updatedRecommendation = plantProvider.getMensajeLuz(
-                              updatedValue.toString(),
-                            );
-                          } else if (sensorName == 'Humedad') {
-                            updatedRecommendation = plantProvider
-                                .getMensajeHumedad(updatedValue.toString());
+
+                          switch (sensorName) {
+                            case 'Luz':
+                              updatedRecommendation = plantProvider
+                                  .getMensajeLuz(updatedValue.toString());
+                              break;
+                            case 'Humedad':
+                              updatedRecommendation = plantProvider
+                                  .getMensajeHumedad(updatedValue.toString());
+                              break;
+                            case 'Temperatura':
+                              updatedRecommendation = plantProvider
+                                  .getMensajeTemperatura(
+                                    updatedValue.toString(),
+                                  );
+                              break;
+                            case 'Ph':
+                              updatedRecommendation = plantProvider
+                                  .getMensajePh(updatedValue.toString());
+                              break;
                           }
 
                           return SingleChildScrollView(
@@ -161,13 +208,17 @@ class _DeviceScreenState extends State<DeviceScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 Text(
-                                  '$updatedValue\n${sensorName == 'Luz' ? 'lx' : '%'}',
-                                  style: const TextStyle(color: Colors.white),
+                                  '$updatedValue ${_getUnidad(sensorName)}',
+                                  style: const TextStyle(
+                                    color: Color.fromARGB(255, 0, 0, 0),
+                                  ),
                                 ),
                                 const SizedBox(height: 10),
                                 Text(
-                                  updatedRecommendation, // Consejos actualizados
-                                  style: const TextStyle(color: Colors.white),
+                                  updatedRecommendation,
+                                  style: const TextStyle(
+                                    color: Color.fromARGB(255, 0, 0, 0),
+                                  ),
                                 ),
                               ],
                             ),
@@ -175,14 +226,16 @@ class _DeviceScreenState extends State<DeviceScreen> {
                         } else {
                           return const Text(
                             'Datos no válidos',
-                            style: TextStyle(color: Colors.white),
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 0, 0, 0),
+                            ),
                           );
                         }
                       }
 
                       return const Text(
                         'Datos no disponibles',
-                        style: TextStyle(color: Colors.white),
+                        style: TextStyle(color: Color.fromARGB(255, 3, 3, 3)),
                       );
                     },
                   );
@@ -195,15 +248,17 @@ class _DeviceScreenState extends State<DeviceScreen> {
               onPressed: () => Navigator.pop(context, 'Cancelar'),
               child: const Text(
                 'Cancelar',
-                style: TextStyle(color: Colors.white),
+                style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
               ),
             ),
             TextButton(
               onPressed: () => Navigator.pop(context, 'OK'),
-              child: const Text('OK', style: TextStyle(color: Colors.white)),
+              child: const Text(
+                'OK',
+                style: TextStyle(color: Color.fromARGB(255, 0, 0, 0)),
+              ),
             ),
           ],
-          // Limitar el tamaño máximo del contenido del pop-up
           scrollable: true,
         );
       },
@@ -265,27 +320,27 @@ class _DeviceScreenState extends State<DeviceScreen> {
                             OutlinedButton(
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(
-                                  color: Color.fromARGB(255, 255, 156, 7),
+                                  color: Color.fromARGB(255, 255, 205, 42),
                                   width: 2,
                                 ),
                                 shape: const CircleBorder(),
-                                padding: const EdgeInsets.all(25),
-                                backgroundColor: const Color.fromRGBO(
+                                padding: const EdgeInsets.all(20),
+                                backgroundColor: const Color.fromARGB(
                                   255,
-                                  193,
-                                  7,
-                                  1,
+                                  253,
+                                  234,
+                                  64,
                                 ), // fondo amarillo
                               ),
                               onPressed: () {
                                 _showSensorDialog(
                                   context,
                                   'Luz',
-                                  const Color.fromRGBO(
+                                  const Color.fromARGB(
                                     255,
-                                    193,
-                                    7,
-                                    1,
+                                    253,
+                                    234,
+                                    64,
                                   ), // Mostrar el mensaje de recomendación
                                 );
                               },
@@ -303,16 +358,16 @@ class _DeviceScreenState extends State<DeviceScreen> {
                             OutlinedButton(
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(
-                                  color: Color.fromARGB(255, 33, 72, 243),
+                                  color: Color.fromARGB(255, 91, 124, 255),
                                   width: 2,
                                 ),
                                 shape: const CircleBorder(),
-                                padding: const EdgeInsets.all(25),
+                                padding: const EdgeInsets.all(20),
                                 backgroundColor: const Color.fromARGB(
                                   255,
-                                  33,
-                                  150,
-                                  243,
+                                  94,
+                                  192,
+                                  228,
                                 ), // fondo azul
                               ),
                               onPressed: () {
@@ -333,6 +388,72 @@ class _DeviceScreenState extends State<DeviceScreen> {
                                 color: Colors.white, // ícono blanco
                               ),
                             ),
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                  color: Color.fromARGB(255, 192, 26, 26),
+                                  width: 2,
+                                ),
+                                shape: const CircleBorder(),
+                                padding: const EdgeInsets.all(20),
+                                backgroundColor: const Color.fromARGB(
+                                  255,
+                                  250,
+                                  100,
+                                  100,
+                                ), // fondo azul
+                              ),
+                              onPressed: () {
+                                _showSensorDialog(
+                                  context,
+                                  'Temperatura',
+                                  const Color.fromARGB(
+                                    255,
+                                    250,
+                                    100,
+                                    100,
+                                  ), // Mostrar el mensaje de recomendación
+                                );
+                              },
+                              child: const Icon(
+                                Icons.device_thermostat,
+                                size: 35,
+                                color: Colors.white, // ícono blanco
+                              ),
+                            ),
+                            OutlinedButton(
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                  color: Color.fromARGB(255, 242, 140, 204),
+                                  width: 2,
+                                ),
+                                shape: const CircleBorder(),
+                                padding: const EdgeInsets.all(20),
+                                backgroundColor: const Color.fromARGB(
+                                  255,
+                                  255,
+                                  195,
+                                  235,
+                                ), // fondo azul
+                              ),
+                              onPressed: () {
+                                _showSensorDialog(
+                                  context,
+                                  'Ph',
+                                  const Color.fromARGB(
+                                    255,
+                                    255,
+                                    195,
+                                    235,
+                                  ), // Mostrar el mensaje de recomendación
+                                );
+                              },
+                              child: const Icon(
+                                Icons.science,
+                                size: 35,
+                                color: Colors.white, // ícono blanco
+                              ),
+                            ),
                           ],
                         ),
                         const SizedBox(height: 30),
@@ -340,12 +461,12 @@ class _DeviceScreenState extends State<DeviceScreen> {
                         Center(
                           child: Text(
                             widget.device == null
-                                ? '⚠️ No hay dispositivo conectado'
+                                ? 'No hay dispositivo conectado...'
                                 : (isConnected
-                                    ? '✅ Dispositivo Conectado'
-                                    : '⏳ Conectando...'),
+                                    ? 'Dispositivo Conectado'
+                                    : 'Conectando...'),
                             style: TextStyle(
-                              fontSize: 20,
+                              fontSize: 18,
                               color:
                                   widget.device == null
                                       ? const Color.fromARGB(255, 0, 0, 0)

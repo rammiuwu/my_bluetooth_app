@@ -10,8 +10,8 @@ class BluetoothProvider with ChangeNotifier {
   bool _isConnected = false;
   String _humidity = "N/A";
   String _light = "N/A";
-  String _temperature = "N/A";
   String _ph = "N/A";
+  String _temperature = "N/A";
   String? _plantName;
   String? _userId;
 
@@ -25,8 +25,8 @@ class BluetoothProvider with ChangeNotifier {
   bool get isConnected => _isConnected;
   String get humidity => _humidity;
   String get light => _light;
-  String get temperature => _temperature;
   String get ph => _ph;
+  String get temperature => _temperature;
   String? get plantName => _plantName;
   String? get userId => _userId;
   Stream<Map<String, String>> get sensorDataStream =>
@@ -107,17 +107,17 @@ class BluetoothProvider with ChangeNotifier {
         if (parts.length >= 4) {
           _humidity = parts[0];
           _light = parts[1];
-          _temperature = parts[2];
-          _ph = parts[3];
+          _ph = parts[2];
+          _temperature = parts[3];
           print(
-            "✅ Humedad: $_humidity, Luz: $_light, Temperatura: $_temperature, Ph: $_ph",
+            "✅ Humedad: $_humidity, Luz: $_light, Ph: $_ph, Temperatura: $_temperature",
           );
 
           _sensorDataController.add({
             'humidity': _humidity,
             'light': _light,
-            'temperature': _temperature,
             'ph': _ph,
+            'temperature': _temperature,
           });
           notifyListeners();
 
@@ -146,7 +146,7 @@ class BluetoothProvider with ChangeNotifier {
       String formattedDate = DateFormat('yyyy-MM-dd').format(DateTime.now());
 
       print(
-        "🚀 Guardando en Firebase: humidity=$_humidity, light=$_light, temperature=$_temperature, ph=$_ph, date=$formattedDate, plantName=$_plantName",
+        "🚀 Guardando en Firebase: humidity=$_humidity, light=$_light, ph=$_ph, temperature=$_temperature, date=$formattedDate, plantName=$_plantName",
       );
 
       await _firestore
@@ -159,8 +159,8 @@ class BluetoothProvider with ChangeNotifier {
           .set({
             'humidity': _humidity,
             'light': _light,
-            'temperature': _temperature,
             'ph': _ph,
+            'temperature': _temperature,
           });
 
       print("✅ Datos de sensores guardados exitosamente en Firebase.");
@@ -188,8 +188,8 @@ class BluetoothProvider with ChangeNotifier {
       _isConnected = false;
       _humidity = "N/A";
       _light = "N/A";
-      _temperature = "N/A";
       _ph = "N/A";
+      _temperature = "N/A";
       notifyListeners();
       print("✅ Dispositivo desconectado.");
     }

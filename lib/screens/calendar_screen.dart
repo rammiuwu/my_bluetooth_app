@@ -115,7 +115,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 );
               }).toList(),
         ),
-        SizedBox(height: 16),
+        SizedBox(height: 10),
         if (_selectedPlant != null)
           FutureBuilder<Map<String, dynamic>?>(
             future: _fetchDataForPlant(_selectedPlant!),
@@ -131,15 +131,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
                       Text(
                         "🌱 ${_selectedPlant!}",
                         style: TextStyle(
-                          fontSize: 18,
+                          fontSize: 17,
                           fontWeight: FontWeight.bold,
                         ),
                       ),
                       SizedBox(height: 8),
                       Text("Humedad: ${data['humidity']}%"),
                       Text("Luz: ${data['light']} lx"),
-                      Text("Temperatura: ${data['temperature'] ?? 'N/D'}°C"),
-                      Text("pH: ${data['ph'] ?? 'N/D'}"),
+                      Text("Temperatura: ${data['temperature']}°C"),
+                      Text("pH: ${data['ph']}"),
                     ],
                   ),
                 );

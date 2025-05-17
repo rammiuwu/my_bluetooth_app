@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:my_bluetooth_app/screens/bluetooth_screen.dart';
 import 'package:my_bluetooth_app/screens/calendar_screen.dart';
+import 'package:my_bluetooth_app/screens/miau_screen.dart';
 import 'package:my_bluetooth_app/screens/device_screen.dart';
 import 'package:my_bluetooth_app/main.dart';
 import 'package:my_bluetooth_app/screens/bluetooth_provider.dart'; // Asegúrate de tener este import
@@ -17,9 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<String> selectedPlants = [];
 
   static List<Widget> get _widgetOptions => <Widget>[
-    Center(
-      child: Text("Miau", style: GoogleFonts.robotoCondensed(fontSize: 20)),
-    ),
+    MiauScreen(),
     Container(), // Este se reemplaza dinámicamente en `body`
     CalendarScreen(), // Aquí va la vista de calendario real
   ];
@@ -31,13 +30,22 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showCustomDialog(BuildContext context) {
-    List<String> plantas = [
-      "Planta Billete",
-      "Lengua de Suegra",
-      "Cactus",
-      "Orquídea",
-      "Bonsái",
-    ];
+    final Map<String, List<String>> plantasPorTipo = {
+      "Medicinales": ["Aloe Vera", "Manzanilla"],
+      "Alimenticias": ["Tomate Cherry", "Zanahoria"],
+      "Ornamentales": [
+        "Planta Billete",
+        "Lengua de Suegra",
+        "Cactus",
+        "Orquídea",
+        "Bonsái",
+        "Rosa",
+        "Suculenta",
+      ],
+    };
+
+    List<String> tiposPlantas = plantasPorTipo.keys.toList();
+    String? tipoSeleccionado;
 
     showDialog<void>(
       context: context,
@@ -46,82 +54,138 @@ class _HomeScreenState extends State<HomeScreen> {
           context,
           listen: false,
         );
-        return AlertDialog(
-          backgroundColor:
-              themeProvider.isDarkMode ? Colors.grey[800] : Colors.white,
-          title: Text(
-            'Selecciona una planta',
-            style: GoogleFonts.robotoCondensed(
-              color: themeProvider.isDarkMode ? Colors.white : Colors.black,
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: SizedBox(
-            width: double.maxFinite,
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: plantas.length,
-              itemBuilder: (context, index) {
-                return ListTile(
-                  title: Text(
-                    plantas[index],
-                    style: GoogleFonts.robotoCondensed(
-                      color:
-                          themeProvider.isDarkMode
-                              ? Colors.white
-                              : Colors.black,
-                      fontSize: 16,
-                    ),
-                  ),
-                  leading: Icon(
-                    Icons.local_florist,
-                    color:
-                        themeProvider.isDarkMode
-                            ? Colors.teal[400]
-                            : Colors.blueGrey[800],
-                  ),
-                  onTap: () {
-                    if (!selectedPlants.contains(plantas[index])) {
-                      if (selectedPlants.length < 5) {
-                        setState(() {
-                          selectedPlants.add(plantas[index]);
-                        });
-                        Navigator.of(context).pop();
-                      } else {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              "Solo puedes agregar hasta 5 plantas",
-                              style: GoogleFonts.robotoCondensed(),
-                            ),
-                            duration: Duration(seconds: 2),
-                          ),
-                        );
-                      }
-                    } else {
-                      Navigator.of(context).pop();
-                    }
-                  },
-                );
-              },
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: Text(
-                'Cancelar',
+
+        return StatefulBuilder(
+          builder: (context, setStateDialog) {
+            return AlertDialog(
+              backgroundColor:
+                  themeProvider.isDarkMode ? Colors.grey[800] : Colors.white,
+              title: Text(
+                tipoSeleccionado == null
+                    ? 'Selecciona una categoría'
+                    : 'Selecciona una planta',
                 style: GoogleFonts.robotoCondensed(
-                  color:
-                      themeProvider.isDarkMode
-                          ? Colors.teal[400]
-                          : Colors.blueGrey[800],
+                  color: themeProvider.isDarkMode ? Colors.white : Colors.black,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              onPressed: () => Navigator.of(context).pop(),
-            ),
-          ],
+              content: SizedBox(
+                width: double.maxFinite,
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount:
+                      tipoSeleccionado == null
+                          ? tiposPlantas.length
+                          : plantasPorTipo[tipoSeleccionado]!.length,
+                  itemBuilder: (context, index) {
+                    if (tipoSeleccionado == null) {
+                      return ListTile(
+                        title: Text(
+                          tiposPlantas[index],
+                          style: GoogleFonts.robotoCondensed(
+                            color:
+                                themeProvider.isDarkMode
+                                    ? Colors.white
+                                    : Colors.black,
+                            fontSize: 16,
+                          ),
+                        ),
+                        leading: Icon(
+                          Icons.category,
+                          color:
+                              themeProvider.isDarkMode
+                                  ? Colors.teal[400]
+                                  : Colors.blueGrey[800],
+                        ),
+                        onTap: () {
+                          setStateDialog(() {
+                            tipoSeleccionado = tiposPlantas[index];
+                          });
+                        },
+                      );
+                    } else {
+                      String planta = plantasPorTipo[tipoSeleccionado]![index];
+                      return ListTile(
+                        title: Text(
+                          planta,
+                          style: GoogleFonts.robotoCondensed(
+                            color:
+                                themeProvider.isDarkMode
+                                    ? Colors.white
+                                    : Colors.black,
+                            fontSize: 16,
+                          ),
+                        ),
+                        leading: Icon(
+                          Icons.local_florist,
+                          color:
+                              themeProvider.isDarkMode
+                                  ? Colors.teal[400]
+                                  : Colors.blueGrey[800],
+                        ),
+                        onTap: () {
+                          if (!selectedPlants.contains(planta)) {
+                            if (selectedPlants.length < 5) {
+                              setState(() {
+                                selectedPlants.add(planta);
+                              });
+                              Navigator.of(context).pop();
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    "Solo puedes agregar hasta 5 plantas",
+                                    style: GoogleFonts.robotoCondensed(),
+                                  ),
+                                  duration: Duration(seconds: 2),
+                                ),
+                              );
+                            }
+                          } else {
+                            Navigator.of(context).pop();
+                          }
+                        },
+                      );
+                    }
+                  },
+                ),
+              ),
+              actions: <Widget>[
+                if (tipoSeleccionado != null)
+                  TextButton(
+                    child: Text(
+                      'Atrás',
+                      style: GoogleFonts.robotoCondensed(
+                        color:
+                            themeProvider.isDarkMode
+                                ? Colors.teal[400]
+                                : Colors.blueGrey[800],
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    onPressed: () {
+                      setStateDialog(() {
+                        tipoSeleccionado = null;
+                      });
+                    },
+                  ),
+                TextButton(
+                  child: Text(
+                    'Cancelar',
+                    style: GoogleFonts.robotoCondensed(
+                      color:
+                          themeProvider.isDarkMode
+                              ? Colors.teal[400]
+                              : Colors.blueGrey[800],
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            );
+          },
         );
       },
     );
@@ -131,7 +195,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.isDarkMode;
-    final primaryColor = isDarkMode ? Colors.teal[400] : Colors.blueGrey[800];
+    final primaryColor =
+        isDarkMode ? Colors.teal[400] : const Color.fromARGB(255, 58, 109, 81);
 
     return Scaffold(
       appBar: AppBar(
@@ -239,12 +304,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           fontWeight: FontWeight.bold,
                                           color:
                                               isDarkMode
-                                                  ? const Color.fromARGB(
-                                                    255,
-                                                    255,
-                                                    255,
-                                                    255,
-                                                  )
+                                                  ? Colors.white
                                                   : Colors.black,
                                         ),
                                       ),
@@ -280,11 +340,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       padding: EdgeInsets.all(15),
                       backgroundColor: primaryColor,
                     ),
-                    child: Icon(
-                      Icons.add,
-                      color: const Color.fromARGB(255, 255, 255, 255),
-                      size: 30,
-                    ),
+                    child: Icon(Icons.add, color: Colors.white, size: 30),
                   ),
                   SizedBox(height: 20),
                 ],
