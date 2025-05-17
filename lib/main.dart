@@ -23,7 +23,7 @@ void main() async {
     return;
   }
 
-  // Obtener o crear userId en SharedPreferences
+  // Obtener o crear userId en SharedPreference s
   final prefs = await SharedPreferences.getInstance();
   String? userId = prefs.getString('userId');
   if (userId == null) {
