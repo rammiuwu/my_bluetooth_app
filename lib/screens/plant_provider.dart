@@ -28,6 +28,13 @@ class PlantProvider with ChangeNotifier {
   String mensajePhBaja = '';
   String mensajePhAlta = '';
 
+  String _modoEstandar = 'Estandar'; // o 'Exterior'
+
+  void setModoEstandar(String modo) {
+    _modoEstandar = modo;
+    notifyListeners();
+  }
+
   // Cargar estándares de la planta desde Firestore
   Future<void> fetchStandards(String planta) async {
     try {
@@ -42,7 +49,7 @@ class PlantProvider with ChangeNotifier {
         final data = doc.data();
         debugPrint("📄 Documento Firestore obtenido: $data");
 
-        final estandar = data?['Estandar'];
+        final estandar = data?[_modoEstandar];
         if (estandar != null) {
           debugPrint("📦 Estándar extraído: $estandar");
 

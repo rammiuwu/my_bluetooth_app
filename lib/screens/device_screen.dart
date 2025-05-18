@@ -20,6 +20,7 @@ class DeviceScreen extends StatefulWidget {
 
 class _DeviceScreenState extends State<DeviceScreen> {
   bool _firebaseLoaded = false;
+  bool _switchValue = false; //
 
   @override
   void initState() {
@@ -312,8 +313,54 @@ class _DeviceScreenState extends State<DeviceScreen> {
                   : Padding(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Botones con contorno y fondo de colores
+                        // 🔘 SWITCH INTEGRADO
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              _switchValue
+                                  ? 'Exterior'
+                                  : 'Interior', // 👈 cambio dinámico aquí
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                color: isDarkMode ? Colors.white : Colors.black,
+                              ),
+                            ),
+                            Switch(
+                              value: _switchValue,
+                              onChanged: (bool newValue) {
+                                setState(() {
+                                  _switchValue = newValue;
+
+                                  final plantProvider =
+                                      Provider.of<PlantProvider>(
+                                        context,
+                                        listen: false,
+                                      );
+                                  plantProvider.setModoEstandar(
+                                    newValue ? 'Exterior' : 'Estandar',
+                                  );
+
+                                  // Si quieres recargar los datos al cambiar, hazlo así:
+                                  plantProvider.fetchStandards(
+                                    widget.plantName,
+                                  ); // asegúrate de tener el nombre
+                                });
+                              },
+                              activeColor: const Color.fromARGB(
+                                255,
+                                253,
+                                207,
+                                79,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 20),
+                        // 🔘 BOTONES DE SENSORES
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -330,29 +377,19 @@ class _DeviceScreenState extends State<DeviceScreen> {
                                   253,
                                   234,
                                   64,
-                                ), // fondo amarillo
+                                ),
                               ),
                               onPressed: () {
                                 _showSensorDialog(
                                   context,
                                   'Luz',
-                                  const Color.fromARGB(
-                                    255,
-                                    253,
-                                    234,
-                                    64,
-                                  ), // Mostrar el mensaje de recomendación
+                                  const Color.fromARGB(255, 253, 234, 64),
                                 );
                               },
                               child: const Icon(
                                 Icons.wb_sunny,
                                 size: 35,
-                                color: Color.fromARGB(
-                                  255,
-                                  255,
-                                  255,
-                                  255,
-                                ), // ícono blanco
+                                color: Colors.white,
                               ),
                             ),
                             OutlinedButton(
@@ -368,24 +405,19 @@ class _DeviceScreenState extends State<DeviceScreen> {
                                   94,
                                   192,
                                   228,
-                                ), // fondo azul
+                                ),
                               ),
                               onPressed: () {
                                 _showSensorDialog(
                                   context,
                                   'Humedad',
-                                  const Color.fromARGB(
-                                    255,
-                                    33,
-                                    150,
-                                    243,
-                                  ), // Mostrar el mensaje de recomendación
+                                  const Color.fromARGB(255, 33, 150, 243),
                                 );
                               },
                               child: const Icon(
                                 Icons.water_drop,
                                 size: 35,
-                                color: Colors.white, // ícono blanco
+                                color: Colors.white,
                               ),
                             ),
                             OutlinedButton(
@@ -401,24 +433,19 @@ class _DeviceScreenState extends State<DeviceScreen> {
                                   250,
                                   100,
                                   100,
-                                ), // fondo azul
+                                ),
                               ),
                               onPressed: () {
                                 _showSensorDialog(
                                   context,
                                   'Temperatura',
-                                  const Color.fromARGB(
-                                    255,
-                                    250,
-                                    100,
-                                    100,
-                                  ), // Mostrar el mensaje de recomendación
+                                  const Color.fromARGB(255, 250, 100, 100),
                                 );
                               },
                               child: const Icon(
                                 Icons.device_thermostat,
                                 size: 35,
-                                color: Colors.white, // ícono blanco
+                                color: Colors.white,
                               ),
                             ),
                             OutlinedButton(
@@ -434,30 +461,26 @@ class _DeviceScreenState extends State<DeviceScreen> {
                                   255,
                                   195,
                                   235,
-                                ), // fondo azul
+                                ),
                               ),
                               onPressed: () {
                                 _showSensorDialog(
                                   context,
                                   'Ph',
-                                  const Color.fromARGB(
-                                    255,
-                                    255,
-                                    195,
-                                    235,
-                                  ), // Mostrar el mensaje de recomendación
+                                  const Color.fromARGB(255, 255, 195, 235),
                                 );
                               },
                               child: const Icon(
                                 Icons.science,
                                 size: 35,
-                                color: Colors.white, // ícono blanco
+                                color: Colors.white,
                               ),
                             ),
                           ],
                         ),
                         const SizedBox(height: 30),
-                        // Estado de conexión
+
+                        // 🔘 ESTADO DE CONEXIÓN
                         Center(
                           child: Text(
                             widget.device == null

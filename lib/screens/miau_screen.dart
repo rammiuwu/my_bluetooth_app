@@ -21,7 +21,7 @@ class _MiauScreenState extends State<MiauScreen>
   ];
 
   final String imageUrl =
-      "https://i.pinimg.com/736x/10/bc/bd/10bcbdc51fdacda178fbf70267e19251.jpg";
+      "https://i.pinimg.com/736x/f3/d9/4e/f3d94e6bff5fd11a25c0a152b115f6dd.jpg";
 
   String? fraseActual;
   Timer? _hideTimer;
