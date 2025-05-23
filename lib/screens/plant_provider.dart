@@ -30,6 +30,12 @@ class PlantProvider with ChangeNotifier {
 
   String _modoEstandar = 'Estandar'; // o 'Exterior'
 
+  // 🆕 Variable para almacenar la URL de la imagen
+  String _plantImageUrl = '';
+
+  // 🆕 Getter para acceder a la URL de la imagen
+  String get plantImageUrl => _plantImageUrl;
+
   void setModoEstandar(String modo) {
     _modoEstandar = modo;
     notifyListeners();
@@ -49,6 +55,10 @@ class PlantProvider with ChangeNotifier {
         final data = doc.data();
         debugPrint("📄 Documento Firestore obtenido: $data");
 
+        // 🆕 Extraer la URL de la imagen
+        _plantImageUrl = data?['Imagen'] ?? '';
+        debugPrint("🖼️ URL de imagen extraída: $_plantImageUrl");
+
         final estandar = data?[_modoEstandar];
         if (estandar != null) {
           debugPrint("📦 Estándar extraído: $estandar");
@@ -60,8 +70,8 @@ class PlantProvider with ChangeNotifier {
 
           debugPrint("💡 Datos de Luz: $luz");
           debugPrint("💧 Datos de Humedad: $humedad");
-          debugPrint("💡 Datos de Temperatura: $temperatura");
-          debugPrint("💧 Datos de Ph: $ph");
+          debugPrint("🌡️ Datos de Temperatura: $temperatura");
+          debugPrint("🧪 Datos de Ph: $ph");
 
           luzMin = luz['min']?.toDouble() ?? 0;
           luzMax = luz['max']?.toDouble() ?? 10000;
@@ -99,26 +109,15 @@ class PlantProvider with ChangeNotifier {
           mensajePhAlta = consejosPh['alto'] ?? '';
 
           debugPrint("✅ Estándares cargados correctamente:");
+          debugPrint("   • Imagen: $_plantImageUrl");
           debugPrint("   • Luz: [$luzMin - $luzMax]");
           debugPrint("   • Humedad: [$humedadMin - $humedadMax]");
           debugPrint("   • Temperatura: [$temperaturaMin - $temperaturaMax]");
           debugPrint("   • Ph: [$phMin - $phMax]");
-          debugPrint(
-            "   • Msg Luz: $mensajeLuzIdeal | $mensajeLuzBaja | $mensajeLuzAlta",
-          );
-          debugPrint(
-            "   • Msg Humedad: $mensajeHumedadIdeal | $mensajeHumedadBaja | $mensajeHumedadAlta",
-          );
-          debugPrint(
-            "   • Msg Temperatura: $mensajeTemperaturaIdeal | $mensajeTemperaturaBaja | $mensajeTemperaturaAlta",
-          );
-          debugPrint(
-            "   • Msg Ph: $mensajePhIdeal | $mensajePhBaja | $mensajePhAlta",
-          );
 
           notifyListeners();
         } else {
-          debugPrint("⚠️ El campo 'Estandar' no existe en el documento.");
+          debugPrint("⚠️ El campo '$_modoEstandar' no existe en el documento.");
         }
       } else {
         debugPrint(
@@ -200,18 +199,18 @@ class PlantProvider with ChangeNotifier {
 
   String getMensajePh(String ph) {
     final phActual = double.tryParse(ph) ?? -1;
-    debugPrint("Temperatura recibida: $ph, valor convertido: $phActual");
+    debugPrint("Ph recibido: $ph, valor convertido: $phActual");
 
     if (phActual < 0) {
       return 'Sensor no válido';
     }
 
     if (phActual < phMin) {
-      debugPrint("🔵 Ph baja: $phActual < $phMin");
+      debugPrint("🔵 Ph bajo: $phActual < $phMin");
       return mensajePhBaja;
     }
     if (phActual > phMax) {
-      debugPrint("🔴 Ph alta: $phActual > $phMax");
+      debugPrint("🔴 Ph alto: $phActual > $phMax");
       return mensajePhAlta;
     }
     debugPrint("🟢 Ph ideal: $phActual entre $phMin y $phMax");

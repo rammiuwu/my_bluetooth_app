@@ -20,7 +20,13 @@ class DeviceScreen extends StatefulWidget {
 
 class _DeviceScreenState extends State<DeviceScreen> {
   bool _firebaseLoaded = false;
-  bool _switchValue = false; //
+  bool _switchValue = false;
+
+  // 🎯 CONFIGURACIÓN DE POSICIÓN Y TAMAÑO DE LA IMAGEN
+  static const double _imageAlignment =
+      0.2; // Ajusta este valor: -1.0 (izquierda) a 1.0 (derecha)
+  static const double _imageHeight =
+      500.0; // Ajusta la altura de la imagen (era 200.0)
 
   @override
   void initState() {
@@ -59,7 +65,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
   void _showSensorDialog(
     BuildContext context,
     String sensorName,
-    Color dialogColor, // Parámetro para el color dinámico
+    Color dialogColor,
   ) async {
     final bluetoothProvider = Provider.of<BluetoothProvider>(
       context,
@@ -68,7 +74,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
 
     final plantProvider = Provider.of<PlantProvider>(context, listen: false);
 
-    // Recuperar los valores actualizados de los sensores
     final sensorValue =
         {
           'Luz': bluetoothProvider.light.toString(),
@@ -102,7 +107,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
         case 'Temperatura':
           return '°C';
         case 'Ph':
-          return ''; // Sin unidad
+          return '';
         default:
           return '';
       }
@@ -160,7 +165,6 @@ class _DeviceScreenState extends State<DeviceScreen> {
                         final data = snapshot.data!;
                         String? updatedValueString;
 
-                        // Asignar el valor correcto según el sensor
                         switch (sensorName) {
                           case 'Luz':
                             updatedValueString = data['light'];
@@ -266,6 +270,83 @@ class _DeviceScreenState extends State<DeviceScreen> {
     );
   }
 
+  // 🆕 Widget para mostrar la imagen de la planta (sin fondo)
+  Widget _buildPlantImage(String imageUrl, bool isDarkMode) {
+    if (imageUrl.isEmpty) {
+      return Container(
+        height: _imageHeight,
+        width: double.infinity,
+        child: Align(
+          alignment: Alignment(_imageAlignment, 0.0),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.local_florist,
+                size: _imageHeight * 0.25, // Icono proporcional al tamaño
+                color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Imagen no disponible',
+                style: TextStyle(
+                  color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
+                  fontSize: 16,
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      height: _imageHeight,
+      width: double.infinity,
+      child: Align(
+        alignment: Alignment(_imageAlignment, 0.0),
+        child: Image.network(
+          imageUrl,
+          height: _imageHeight, // Altura fija para la imagen
+          fit:
+              BoxFit
+                  .contain, // Cambiado de cover a contain para preservar transparencia
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Container(
+              height: _imageHeight,
+              child: const Center(child: CircularProgressIndicator()),
+            );
+          },
+          errorBuilder: (context, error, stackTrace) {
+            debugPrint("❌ Error cargando imagen: $error");
+            return Container(
+              height: _imageHeight,
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.error_outline,
+                    size: _imageHeight * 0.25, // Icono proporcional al tamaño
+                    color: Colors.red.withOpacity(0.7),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Error cargando imagen',
+                    style: TextStyle(
+                      color: Colors.red.withOpacity(0.7),
+                      fontSize: 16,
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeProvider = Provider.of<ThemeProvider>(context);
@@ -310,7 +391,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
           body:
               !_firebaseLoaded
                   ? const Center(child: CircularProgressIndicator())
-                  : Padding(
+                  : SingleChildScrollView(
                     padding: const EdgeInsets.all(20.0),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,9 +401,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              _switchValue
-                                  ? 'Exterior'
-                                  : 'Interior', // 👈 cambio dinámico aquí
+                              _switchValue ? 'Exterior' : 'Interior',
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
@@ -344,10 +423,9 @@ class _DeviceScreenState extends State<DeviceScreen> {
                                     newValue ? 'Exterior' : 'Estandar',
                                   );
 
-                                  // Si quieres recargar los datos al cambiar, hazlo así:
                                   plantProvider.fetchStandards(
                                     widget.plantName,
-                                  ); // asegúrate de tener el nombre
+                                  );
                                 });
                               },
                               activeColor: const Color.fromARGB(
@@ -360,6 +438,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
                           ],
                         ),
                         const SizedBox(height: 20),
+
                         // 🔘 BOTONES DE SENSORES
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -498,6 +577,13 @@ class _DeviceScreenState extends State<DeviceScreen> {
                                           : Colors.red),
                             ),
                           ),
+                        ),
+                        const SizedBox(height: 0),
+
+                        // 🆕 IMAGEN DE LA PLANTA (movida aquí, después del estado de conexión)
+                        _buildPlantImage(
+                          plantProvider.plantImageUrl,
+                          isDarkMode,
                         ),
                       ],
                     ),
