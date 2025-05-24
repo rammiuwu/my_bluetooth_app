@@ -5,8 +5,9 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 import 'package:my_bluetooth_app/screens/bluetooth_provider.dart';
-import 'package:my_bluetooth_app/screens/plant_provider.dart'; // Asegúrate de que esta importación sea correcta
+import 'package:my_bluetooth_app/screens/plant_provider.dart';
 import 'dart:math';
+import 'package:my_bluetooth_app/main.dart'; // Adjust the path as needed
 
 class CalendarScreen extends StatefulWidget {
   @override
@@ -483,20 +484,30 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Get the ThemeProvider instance
+    final themeProvider = Provider.of<ThemeProvider>(context);
+
     return SingleChildScrollView(
       padding: EdgeInsets.all(16),
       child: Column(
         children: [
           // ============ BOTONES DE TESTING ============
           Card(
-            color: const Color.fromARGB(255, 255, 255, 255).withOpacity(1),
+            color: themeProvider.isDarkMode ? Colors.grey[800] : Colors.white,
             child: Padding(
               padding: EdgeInsets.all(12),
               child: Column(
                 children: [
                   Text(
                     'Modo Testing',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color:
+                          themeProvider.isDarkMode
+                              ? Colors.white
+                              : Colors.black,
+                    ),
                   ),
                   SizedBox(height: 8),
                   Row(
