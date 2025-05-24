@@ -331,15 +331,53 @@ class _MiauScreenState extends State<MiauScreen>
     }
   }
 
-  Color _getBubbleColorForMood() {
+  Color _getBubbleColorForMood(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
+
     switch (_estadoActual) {
       case EstadoAnimo.feliz:
-        return const Color.fromARGB(255, 200, 255, 200); // Verde claro
+        return isDarkMode
+            ? const Color.fromARGB(
+              255,
+              200,
+              255,
+              200,
+            ) // Verde más oscuro para dark mode
+            : const Color.fromARGB(
+              255,
+              200,
+              255,
+              200,
+            ); // Verde claro para light mode
       case EstadoAnimo.triste:
-        return const Color.fromARGB(255, 200, 210, 255); // Rosa claro
+        return isDarkMode
+            ? const Color.fromARGB(
+              255,
+              200,
+              210,
+              255,
+            ) // Azul más oscuro para dark mode
+            : const Color.fromARGB(
+              255,
+              200,
+              210,
+              255,
+            ); // Azul claro para light mode
       case EstadoAnimo.neutro:
       default:
-        return const Color.fromARGB(255, 255, 253, 153); // Amarillo claro
+        return isDarkMode
+            ? const Color.fromARGB(
+              255,
+              255,
+              253,
+              153,
+            ) // Amarillo más oscuro para dark mode
+            : const Color.fromARGB(
+              255,
+              255,
+              253,
+              153,
+            ); // Amarillo claro para light mode
     }
   }
 
@@ -375,7 +413,7 @@ class _MiauScreenState extends State<MiauScreen>
                       padding: EdgeInsets.all(12),
                       constraints: BoxConstraints(maxWidth: 250),
                       decoration: BoxDecoration(
-                        color: _getBubbleColorForMood(),
+                        color: _getBubbleColorForMood(context),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
@@ -390,6 +428,9 @@ class _MiauScreenState extends State<MiauScreen>
                         style: GoogleFonts.robotoCondensed(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
+                          color:
+                              Colors
+                                  .black, // Siempre negro para buena legibilidad
                         ),
                         textAlign: TextAlign.center,
                       ),

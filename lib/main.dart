@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:my_bluetooth_app/screens/home_screen.dart';
+import 'package:my_bluetooth_app/screens/splash_screen.dart'; // 👈 IMPORTAR EL SPLASH SCREEN
 import 'package:my_bluetooth_app/screens/bluetooth_provider.dart';
 import 'package:my_bluetooth_app/screens/plant_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +24,7 @@ void main() async {
     return;
   }
 
-  // Obtener o crear userId en SharedPreference s
+  // Obtener o crear userId en SharedPreferences
   final prefs = await SharedPreferences.getInstance();
   String? userId = prefs.getString('userId');
   if (userId == null) {
@@ -39,7 +40,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => ThemeProvider()),
         ChangeNotifierProvider(
           create: (_) => BluetoothProvider(userId: userId),
-        ), // ← AQUÍ SE PASA userId
+        ),
         ChangeNotifierProvider(create: (_) => PlantProvider()),
       ],
       child: const MyApp(),
@@ -123,7 +124,8 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: themeProvider.themeData,
-      home: HomeScreen(),
+      home: SplashScreen(),
+      routes: {'/home': (context) => HomeScreen()},
     );
   }
 }
