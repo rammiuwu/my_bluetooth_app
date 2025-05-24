@@ -33,8 +33,12 @@ class PlantProvider with ChangeNotifier {
   // 🆕 Variable para almacenar la URL de la imagen
   String _plantImageUrl = '';
 
-  // 🆕 Getter para acceder a la URL de la imagen
+  // 🆕 Variable para almacenar los comentarios de la planta
+  List<String> _plantComments = [];
+
+  // 🆕 Getters
   String get plantImageUrl => _plantImageUrl;
+  List<String> get plantComments => _plantComments;
 
   void setModoEstandar(String modo) {
     _modoEstandar = modo;
@@ -58,6 +62,35 @@ class PlantProvider with ChangeNotifier {
         // 🆕 Extraer la URL de la imagen
         _plantImageUrl = data?['Imagen'] ?? '';
         debugPrint("🖼️ URL de imagen extraída: $_plantImageUrl");
+
+        // 🆕 Extraer los comentarios de la planta
+        final comentarios = data?['Comentarios'];
+        if (comentarios != null && comentarios is Map) {
+          debugPrint("💬 Procesando ${comentarios.length} comentarios...");
+
+          _plantComments = [];
+
+          // Ordenar las claves numéricamente
+          var sortedKeys = comentarios.keys.toList();
+          sortedKeys.sort((a, b) {
+            int aNum = int.tryParse(a.toString()) ?? 0;
+            int bNum = int.tryParse(b.toString()) ?? 0;
+            return aNum.compareTo(bNum);
+          });
+
+          // Extraer los comentarios en orden
+          for (var key in sortedKeys) {
+            var value = comentarios[key];
+            if (value != null && value.toString().isNotEmpty) {
+              _plantComments.add(value.toString());
+            }
+          }
+
+          debugPrint("💬 Comentarios extraídos: ${_plantComments.length}");
+        } else {
+          _plantComments = [];
+          debugPrint("⚠️ No se encontraron comentarios para esta planta");
+        }
 
         final estandar = data?[_modoEstandar];
         if (estandar != null) {
@@ -110,6 +143,7 @@ class PlantProvider with ChangeNotifier {
 
           debugPrint("✅ Estándares cargados correctamente:");
           debugPrint("   • Imagen: $_plantImageUrl");
+          debugPrint("   • Comentarios: ${_plantComments.length} disponibles");
           debugPrint("   • Luz: [$luzMin - $luzMax]");
           debugPrint("   • Humedad: [$humedadMin - $humedadMax]");
           debugPrint("   • Temperatura: [$temperaturaMin - $temperaturaMax]");
@@ -127,6 +161,16 @@ class PlantProvider with ChangeNotifier {
     } catch (e) {
       debugPrint("❌ Error al obtener estándares de Firebase: $e");
     }
+  }
+
+  // 🆕 Función para obtener un comentario aleatorio
+  String getRandomComment() {
+    if (_plantComments.isEmpty) {
+      return "¡Hola! Soy tu planta favorita 🌱";
+    }
+    final random =
+        DateTime.now().millisecondsSinceEpoch % _plantComments.length;
+    return _plantComments[random];
   }
 
   // Función para obtener el mensaje de humedad basado en los valores

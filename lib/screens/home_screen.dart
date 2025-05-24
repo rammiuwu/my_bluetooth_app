@@ -196,7 +196,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final themeProvider = Provider.of<ThemeProvider>(context);
     final isDarkMode = themeProvider.isDarkMode;
     final primaryColor =
-        isDarkMode ? Colors.teal[400] : const Color.fromARGB(255, 58, 109, 81);
+        isDarkMode ? Colors.teal[400] : const Color.fromARGB(255, 82, 155, 115);
 
     return Scaffold(
       appBar: AppBar(
@@ -276,15 +276,20 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Card(
                             color:
                                 isDarkMode
-                                    ? Colors.grey[800]
+                                    ? const Color.fromARGB(255, 137, 238, 213)
                                     : const Color.fromARGB(255, 253, 255, 153),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
                               side: BorderSide(
                                 color:
                                     isDarkMode
-                                        ? Colors.grey[700]!
-                                        : Colors.grey[200]!,
+                                        ? const Color.fromARGB(255, 71, 71, 71)!
+                                        : const Color.fromARGB(
+                                          255,
+                                          236,
+                                          236,
+                                          236,
+                                        )!,
                                 width: 1,
                               ),
                             ),

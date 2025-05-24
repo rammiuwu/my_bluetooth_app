@@ -1,3 +1,5 @@
+import 'dart:math';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
@@ -18,20 +20,64 @@ class DeviceScreen extends StatefulWidget {
   State<DeviceScreen> createState() => _DeviceScreenState();
 }
 
-class _DeviceScreenState extends State<DeviceScreen> {
+class _DeviceScreenState extends State<DeviceScreen>
+    with SingleTickerProviderStateMixin {
   bool _firebaseLoaded = false;
   bool _switchValue = false;
 
   // 🎯 CONFIGURACIÓN DE POSICIÓN Y TAMAÑO DE LA IMAGEN
-  static const double _imageAlignment =
-      0.2; // Ajusta este valor: -1.0 (izquierda) a 1.0 (derecha)
-  static const double _imageHeight =
-      500.0; // Ajusta la altura de la imagen (era 200.0)
+  static const double _imageAlignment = 0.2;
+  static const double _imageHeight = 500.0;
+
+  // 🆕 Variables para la animación y comentarios
+  late AnimationController _animationController;
+  late Animation<double> _bounceAnimation;
+  String? _currentComment;
+  Timer? _hideCommentTimer;
 
   @override
   void initState() {
     super.initState();
     _setupDevice();
+    _setupAnimation();
+  }
+
+  // 🆕 Configurar la animación
+  void _setupAnimation() {
+    _animationController = AnimationController(
+      vsync: this,
+      duration: Duration(milliseconds: 300),
+    );
+    _bounceAnimation = Tween<double>(
+      begin: 0.0,
+      end: -20.0,
+    ).chain(CurveTween(curve: Curves.easeOut)).animate(_animationController);
+  }
+
+  // 🆕 Manejar el toque en la imagen
+  void _onPlantImageTap() {
+    final plantProvider = Provider.of<PlantProvider>(context, listen: false);
+
+    // Animar la imagen
+    _animationController.forward().then((_) => _animationController.reverse());
+
+    // Mostrar comentario aleatorio
+    final comments = plantProvider.plantComments;
+    if (comments.isNotEmpty) {
+      setState(() {
+        _currentComment = comments[Random().nextInt(comments.length)];
+      });
+
+      // Ocultar el comentario después de 3 segundos
+      _hideCommentTimer?.cancel();
+      _hideCommentTimer = Timer(Duration(seconds: 3), () {
+        if (mounted) {
+          setState(() {
+            _currentComment = null;
+          });
+        }
+      });
+    }
   }
 
   Future<void> _setupDevice() async {
@@ -270,8 +316,14 @@ class _DeviceScreenState extends State<DeviceScreen> {
     );
   }
 
-  // 🆕 Widget para mostrar la imagen de la planta (sin fondo)
-  Widget _buildPlantImage(String imageUrl, bool isDarkMode) {
+  // 🆕 Widget para mostrar la imagen de la planta con animación y comentarios
+  Widget _buildAnimatedPlantImage(String imageUrl, bool isDarkMode) {
+    // 🆕 AÑADIENDO primaryColor en los comentarios
+    final primaryColor =
+        isDarkMode
+            ? const Color.fromARGB(255, 88, 199, 188)
+            : Colors.blueGrey[800];
+
     if (imageUrl.isEmpty) {
       return Container(
         height: _imageHeight,
@@ -283,7 +335,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
             children: [
               Icon(
                 Icons.local_florist,
-                size: _imageHeight * 0.25, // Icono proporcional al tamaño
+                size: _imageHeight * 0.25,
                 color: isDarkMode ? Colors.grey[400] : Colors.grey[600],
               ),
               const SizedBox(height: 10),
@@ -303,48 +355,110 @@ class _DeviceScreenState extends State<DeviceScreen> {
     return Container(
       height: _imageHeight,
       width: double.infinity,
-      child: Align(
-        alignment: Alignment(_imageAlignment, 0.0),
-        child: Image.network(
-          imageUrl,
-          height: _imageHeight, // Altura fija para la imagen
-          fit:
-              BoxFit
-                  .contain, // Cambiado de cover a contain para preservar transparencia
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Container(
-              height: _imageHeight,
-              child: const Center(child: CircularProgressIndicator()),
-            );
-          },
-          errorBuilder: (context, error, stackTrace) {
-            debugPrint("❌ Error cargando imagen: $error");
-            return Container(
-              height: _imageHeight,
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.error_outline,
-                    size: _imageHeight * 0.25, // Icono proporcional al tamaño
-                    color: Colors.red.withOpacity(0.7),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    'Error cargando imagen',
-                    style: TextStyle(
-                      color: Colors.red.withOpacity(0.7),
-                      fontSize: 16,
-                    ),
-                  ),
-                ],
+      child: Stack(
+        children: [
+          // 🆕 Imagen animada y clickeable
+          Align(
+            alignment: Alignment(_imageAlignment, 0.0),
+            child: GestureDetector(
+              onTap: _onPlantImageTap,
+              child: AnimatedBuilder(
+                animation: _animationController,
+                builder: (context, child) {
+                  return Transform.translate(
+                    offset: Offset(0, _bounceAnimation.value),
+                    child: child,
+                  );
+                },
+                child: Image.network(
+                  imageUrl,
+                  height: _imageHeight,
+                  fit: BoxFit.contain,
+                  loadingBuilder: (context, child, loadingProgress) {
+                    if (loadingProgress == null) return child;
+                    return Container(
+                      height: _imageHeight,
+                      child: const Center(child: CircularProgressIndicator()),
+                    );
+                  },
+                  errorBuilder: (context, error, stackTrace) {
+                    debugPrint("❌ Error cargando imagen: $error");
+                    return Container(
+                      height: _imageHeight,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.error_outline,
+                            size: _imageHeight * 0.25,
+                            color: Colors.red.withOpacity(0.7),
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            'Error cargando imagen',
+                            style: TextStyle(
+                              color: Colors.red.withOpacity(0.7),
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
               ),
-            );
-          },
-        ),
+            ),
+          ),
+
+          // 🆕 Burbuja de comentario flotante - POSICIONADA ABAJO con primaryColor
+          if (_currentComment != null)
+            Positioned(
+              bottom: 20,
+              left: 0,
+              right: 0,
+              child: Center(
+                child: Container(
+                  constraints: BoxConstraints(maxWidth: 280),
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color:
+                        isDarkMode
+                            ? primaryColor!.withOpacity(0.9)
+                            : const Color.fromARGB(255, 253, 255, 153),
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color:
+                            isDarkMode
+                                ? primaryColor!.withOpacity(0.3)
+                                : const Color.fromARGB(255, 236, 236, 236),
+                        blurRadius: 8,
+                        offset: Offset(2, 2),
+                      ),
+                    ],
+                  ),
+                  child: Text(
+                    _currentComment!,
+                    style: GoogleFonts.robotoCondensed(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: isDarkMode ? Colors.white : Colors.black87,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+            ),
+        ],
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    _hideCommentTimer?.cancel();
+    super.dispose();
   }
 
   @override
@@ -367,7 +481,10 @@ class _DeviceScreenState extends State<DeviceScreen> {
                 fontSize: 22,
               ),
             ),
-            backgroundColor: isDarkMode ? Colors.grey[900] : Colors.white,
+            backgroundColor:
+                isDarkMode
+                    ? Colors.grey[900]
+                    : const Color.fromARGB(255, 255, 255, 255),
             elevation: 0,
             iconTheme: IconThemeData(color: primaryColor),
             actions: [
@@ -396,7 +513,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 🔘 SWITCH INTEGRADO
+                        // Switch de Interior/Exterior
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -439,7 +556,7 @@ class _DeviceScreenState extends State<DeviceScreen> {
                         ),
                         const SizedBox(height: 20),
 
-                        // 🔘 BOTONES DE SENSORES
+                        // Botones de sensores
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: [
@@ -559,29 +676,79 @@ class _DeviceScreenState extends State<DeviceScreen> {
                         ),
                         const SizedBox(height: 30),
 
-                        // 🔘 ESTADO DE CONEXIÓN
+                        // 🆕 Estado de conexión con primaryColor
                         Center(
-                          child: Text(
-                            widget.device == null
-                                ? 'No hay dispositivo conectado...'
-                                : (isConnected
-                                    ? 'Dispositivo Conectado'
-                                    : 'Conectando...'),
-                            style: TextStyle(
-                              fontSize: 18,
+                          child: Container(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
                               color:
                                   widget.device == null
-                                      ? const Color.fromARGB(255, 0, 0, 0)
+                                      ? const Color.fromARGB(
+                                        255,
+                                        255,
+                                        255,
+                                        255,
+                                      ).withOpacity(1)
                                       : (isConnected
-                                          ? Colors.green
-                                          : Colors.red),
+                                          ? Colors.green.withOpacity(0.2)
+                                          : Colors.orange.withOpacity(0.2)),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color:
+                                    widget.device == null
+                                        ? primaryColor!
+                                        : (isConnected
+                                            ? Colors.green
+                                            : Colors.orange),
+                                width: 2,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  widget.device == null
+                                      ? Icons.bluetooth_disabled
+                                      : (isConnected
+                                          ? Icons.bluetooth_connected
+                                          : Icons.bluetooth_searching),
+                                  color:
+                                      widget.device == null
+                                          ? primaryColor
+                                          : (isConnected
+                                              ? Colors.green
+                                              : Colors.orange),
+                                  size: 20,
+                                ),
+                                SizedBox(width: 8),
+                                Text(
+                                  widget.device == null
+                                      ? 'Sin dispositivo'
+                                      : (isConnected
+                                          ? 'Conectado'
+                                          : 'Conectando...'),
+                                  style: GoogleFonts.robotoCondensed(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color:
+                                        widget.device == null
+                                            ? primaryColor
+                                            : (isConnected
+                                                ? Colors.green
+                                                : Colors.orange),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
-                        const SizedBox(height: 0),
+                        const SizedBox(height: 5),
 
-                        // 🆕 IMAGEN DE LA PLANTA (movida aquí, después del estado de conexión)
-                        _buildPlantImage(
+                        // 🆕 Imagen animada de la planta (reemplaza _buildPlantImage)
+                        _buildAnimatedPlantImage(
                           plantProvider.plantImageUrl,
                           isDarkMode,
                         ),
