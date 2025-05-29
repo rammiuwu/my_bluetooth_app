@@ -7,7 +7,7 @@ import 'package:my_bluetooth_app/screens/bluetooth_provider.dart';
 import 'package:my_bluetooth_app/screens/plant_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
-import 'firebase_options.dart'; // Importa el archivo generado por FlutterFire CLI
+import 'firebase_options.dart'; // Importa el archivo generado por FlutterFire CLI   PROYECTO TERMINADO, LO GUARDARE ULTIMA VEZ
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
